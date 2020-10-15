@@ -13,6 +13,8 @@ import Chip from '@material-ui/core/Chip';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 
+import {context} from './Store'
+
 
 
 
@@ -64,12 +66,23 @@ const useStyles = makeStyles((theme) => ({
         margin:'20px'
        
       },
+      author:{
+          display:'flex',
+          fontSize:'10px'
+      }
 
       
 }));
   
 function Dashboard(){
     const classes = useStyles();
+
+    //store
+    const {allChats , sendChatAction, user} = React.useContext(context);
+    console.log({allChats});
+    const topics = Object.keys(allChats)
+
+    const [activeTopic, changeActiveTopic]= React.useState(topics[0])
     const [textValue, changeTextValue]=React.useState('');
     return(
         <div className={classes.root}>
@@ -78,15 +91,15 @@ function Dashboard(){
                 ChatApp
               </Typography>
               <Typography component="h5" className={classes.color}>
-                  Topic Placeholder (REPLACE WITH PROPS)
+                  {activeTopic}
               </Typography>
             
             <div className={classes.flex}>
                 <div className={classes.topicWindow}>
                     <List>
                         {
-                            ['Drafts'].map(topic=>(
-                                <ListItem button>
+                            topics.map(topic=>(
+                                <ListItem onClick={e=>changeActiveTopic(e.target.innerText)} key={topic} button>
                             <ListItemText primary={topic}></ListItemText>
                         </ListItem>
                             ))
@@ -96,10 +109,10 @@ function Dashboard(){
                 </div>
                 <div className={classes.chatWindow}>
                     {
-                        [{from:'user',msg:'hello'}].map((chat,i)=>(
+                        allChats[activeTopic].map((chat,i)=>(
                            <div className={classes.flex} key={i}>
-                               <Chip label={chat.from} variant="outlined"></Chip>
-                               <Typography variant="inherit">{chat.msg}</Typography>
+                               <Chip label={chat.msg} variant="outlined"></Chip>
+                               <Typography className={classes.author} variant="h5" component="h5">{chat.from}</Typography>
                            </div>
                         ))
                     }
@@ -115,7 +128,10 @@ function Dashboard(){
                  onChange={e=>changeTextValue(e.target.value)}
 
                  />
-                <Button className={classes.button} variant="contained" color="secondary">
+                <Button className={classes.button} variant="contained" color="secondary" onClick={()=>{
+                    sendChatAction({from:user,msg:textValue,topic:activeTopic})
+                    changeTextValue('')
+                }}>
                     Send
                 </Button>
             </div>
